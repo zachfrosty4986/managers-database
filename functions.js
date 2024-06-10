@@ -32,14 +32,13 @@ async function addEmployee() {
     ]);
 
     const { first_name, last_name, role_id } = answers;
-    const newEmployee = { first_name, last_name, role_id };
 
     try {
         const result = await pool.query(
-            'INSERT INTO employee (first_name, last_name), VALUES (role_id)'
+            'INSERT INTO employee (first_name, last_name, role_id) VALUES ($1, $2, $3)',
+            [first_name, last_name, role_id]
         );
-        console.log(result);
-        console.table(result.rows);
+        console.log("New Employee Sucessfully Added!");
     } catch (error) {
         console.error(error);
     }
@@ -59,27 +58,23 @@ async function updateEmployeeRole() {
         },
         {
             type: 'input',
-            name: 'newRole',
-            message: 'What is the new role for this employee?'
+            name: 'role_id',
+            message: 'What is the new role ID for this employee?'
         },
     ]);
 
-    const { first_name, last_name, newRole } = answers;
+    const { first_name, last_name, role_id } = answers;
 
     try {
-        const employee = await pool.getEmployeeByName(first_name, last_name);
-        
-        if (employee) {
-            employee.role_id = newRole;
-            await pool.updateEmployee(employee);
-            console.log(`Employee role successfully updated for employee ${first_name} ${last_name} in database!`);
-        } else {
-            console.log(`Employee ${first_name} ${last_name} not found in database :(`);
-        }
+        const result = await pool.query(
+            'INSERT INTO employee (first_name, last_name, role_id) VALUES ($1, $2, $3)',
+            [first_name, last_name, role_id]
+        );
+        console.log(`New Role sucessfully updated for ${first_name} ${last_name}!`);
     } catch (error) {
         console.error(error);
     }
-}
+};
 
 async function addRole() {
     const questions = [
@@ -102,8 +97,14 @@ async function addRole() {
 
     try {
         const answers = await inquirer.prompt(questions);
-        await pool.addRole(answers);
-        console.log(`Role ${answers.title} added successfully to database!`);
+
+        const { title, salary, department_id } = answers; // Destructuring the answers object
+
+        const result = await pool.query(
+            'INSERT INTO roles (title, salary, department_id) VALUES ($1, $2, $3)',
+            [title, salary, department_id]
+        );
+        console.log("New Role Successfully Added!");
     } catch (error) {
         console.error(error);
     }
@@ -119,8 +120,17 @@ async function addDepartment() {
             }
         ]);
 
-        await pool.addDepartment(answers);
-        console.log(`Department ${answers.department_name} added successfully to database!`);
+        const departmentName = answers.department_name;
+
+        try {
+            const result = await pool.query(
+                'INSERT INTO department (department_name) VALUES ($1)',
+                [departmentName]
+            );
+            console.log("New Department Successfully Added!");
+        } catch (error) {
+            console.error(error);
+        }
     } catch (error) {
         console.error(error);
     }
@@ -129,10 +139,9 @@ async function addDepartment() {
 async function viewAllRoles() {
     try {
         const result = await pool.query(
-            'SELECT * FROM roles'
+            'SELECT title, salary, department_name FROM roles JOIN department ON department.id = roles.department_id'
         );
-        console.log(result);
-        console.table(result.rows)
+        console.table(result.rows); // Assuming you want to display the results in a table format
     } catch (error) {
         console.error(error);
     }
@@ -153,9 +162,13 @@ async function viewAllDepartments() {
 async function viewAllEmployees() {
     try {
         const result = await pool.query(
-            'SELECT * FROM employee'
+            `SELECT employee.first_name, employee.last_name, roles.title, roles.salary, department.department_name,manager.first_name AS manager_first_name, manager.last_name AS manager_last_name
+             FROM employee
+             JOIN roles ON employee.role_id = roles.id
+             JOIN department ON department.id = roles.department_id
+             LEFT JOIN employee AS manager ON manager.id = employee.manager_id;
+             `
         );
-        console.log(result);
         console.table(result.rows);
     } catch (error) {
         console.error(error);
