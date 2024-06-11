@@ -1,21 +1,35 @@
-const inquirer = require('inquirer');
-const {addDepartment, viewAllDepartments, addRole, viewAllRoles, updateEmployeeRole, addEmployee, viewAllEmployees} = require('./functions');
+// Import the required modules
+const inquirer = require('inquirer'); // For user prompts
+// Import functions from 'functions' module
+const { addDepartment, viewAllDepartments, addRole, viewAllRoles, updateEmployeeRole, addEmployee, viewAllEmployees } = require('./functions');
 
+// Define a list of questions for the user
 const questions = [
     {
-        type: 'list',
-        name: 'departmentList',
-        message: 'What would you like to do?:',
-        choices: ["View All Employees", "Add Employee", "Update Employee Role", "View All Roles", "Add Role", "View All Departments", "Add Department", "Quit"],
+        type: 'list', // Type of prompt
+        name: 'departmentList', // Name of the answer object
+        message: 'What would you like to do?:', // Message to display to the user
+        choices: [ // List of choices
+            "View All Employees",
+            "Add Employee",
+            "Update Employee Role",
+            "View All Roles",
+            "Add Role",
+            "View All Departments",
+            "Add Department",
+            "Quit"
+        ],
     }
 ]
 
-
+// Initialize the application
 function init() {
+    // Prompt the user with the defined questions
     inquirer.prompt(questions).then((answers) => {
+        // Check which choice was selected and call the corresponding function
         if (answers.departmentList === "View All Departments") {
             viewAllDepartments();
-        } 
+        }
         if (answers.departmentList === "View All Roles") {
             viewAllRoles();
         }
@@ -34,11 +48,12 @@ function init() {
         if (answers.departmentList === "Add Role") {
             addRole();
         }
+        // Exit the program if the user chooses to quit
         if (answers.departmentList === "Quit") {
-            console.log("Returning to main terminal...")
+            console.log("Returning to main terminal...");
         }
     })
 };
 
+// Start the application
 init();
-
